@@ -43,8 +43,8 @@ export function ThemeProvider({
     }
 
     root.classList.add(theme)
-  }, [theme])
-
+  }
+  , [theme])
   const value: ThemeContextType = {
     theme,
     setTheme: (theme: Theme) => {
@@ -59,11 +59,14 @@ export function ThemeProvider({
     </ThemeContext.Provider>
   )
 }
-
-export const useTheme = (): ThemeContextType => {
+export function npx vitestuseTheme(): ThemeContextType {
   const context = useContext(ThemeContext)
   if (!context) {
     throw new Error("useTheme must be used within a ThemeProvider")
   }
   return context
 }
+function vitestuseTheme() {
+  throw new Error("Function not implemented.")
+}
+
