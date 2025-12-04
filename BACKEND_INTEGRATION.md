@@ -34,6 +34,15 @@ Update the `.env` file in the root directory:
 ```env
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Stripe Configuration
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+VITE_STRIPE_PRICE_BASIC=price_1234567890basic
+VITE_STRIPE_PRICE_PROFESSIONAL=price_1234567890professional
+VITE_STRIPE_PRICE_PREMIUM=price_1234567890premium
+
+# Stripe API URL (your backend endpoint)
+VITE_STRIPE_API_URL=http://localhost:3000/api/stripe
 ```
 
 ### 3. Set Up Database Schema
@@ -131,6 +140,12 @@ const members = membersData && membersData.length > 0
 
 - `usePricingPlans()` - Fetch all pricing plans
 
+### Stripe Subscriptions
+
+- `useCreateCheckoutSession()` - Create Stripe checkout session for subscriptions
+- `useCreatePortalSession()` - Open Stripe customer portal for subscription management
+- `useSubscriptionStatus()` - Get current user's subscription details
+
 ## Database Schema
 
 ### `members` Table
@@ -173,6 +188,23 @@ const members = membersData && membersData.length > 0
 | features | TEXT[] | Array of features |
 | popular | BOOLEAN | Highlighted plan |
 
+### `subscriptions` Table
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| user_id | UUID | Foreign key to auth.users |
+| stripe_customer_id | TEXT | Stripe customer ID |
+| stripe_subscription_id | TEXT | Stripe subscription ID |
+| plan_title | TEXT | Subscribed plan name |
+| price | DECIMAL | Monthly price |
+| period | TEXT | Billing period |
+| status | TEXT | Subscription status |
+| current_period_start | TIMESTAMP | Billing period start |
+| current_period_end | TIMESTAMP | Billing period end |
+| cancel_at_period_end | BOOLEAN | Will cancel at end |
+| canceled_at | TIMESTAMP | Cancellation date |
+
 ## Security
 
 ### Row Level Security (RLS)
@@ -182,12 +214,48 @@ All tables have RLS enabled with these policies:
 - **Public read access** - Anyone can view active data
 - **Authenticated write** - Only logged-in users can create/update
 - **Own data only** - Users can only modify their own records
+- **Subscription privacy** - Users can only view their own subscription
 
 ### API Keys
 
 - The **anon key** is safe to expose in the frontend
 - It works with RLS policies to restrict access
 - Never commit `.env` files to version control
+- Stripe secret keys must stay on the backend only
+
+## Stripe Integration
+
+### Setup Process
+
+1. **Install Dependencies** (already done):
+   ```bash
+   npm install @stripe/stripe-js @stripe/react-stripe-js stripe
+   ```
+
+2. **Create Stripe Products** in Stripe Dashboard:
+   - Basic - $29/month
+   - Professional - $49/month
+   - Premium - $79/month
+
+3. **Configure Environment Variables**:
+   - Add Stripe publishable key to `.env`
+   - Add price IDs for each plan
+   - Set up backend API URL
+
+4. **Deploy Backend API**:
+   - See `STRIPE_SETUP.md` for backend deployment guide
+   - Configure webhooks for subscription events
+
+5. **Add Subscriptions Table**:
+   - Run the subscriptions table SQL from `supabase-schema.sql`
+
+### Using Stripe in Components
+
+Stripe integration is already implemented in:
+- `src/lib/stripe.ts` - Stripe configuration
+- `src/hooks/useStripe.ts` - Custom hooks for checkout and portal
+- `src/components/PricingCard.tsx` - Subscribe button integration
+- `src/components/SubscriptionStatus.tsx` - Subscription management UI
 
 ## Advanced Features
 
@@ -262,16 +330,27 @@ const { data: { user } } = await supabase.auth.getUser();
 - Regenerate types: `npx supabase gen types typescript --project-id your-project-id > src/lib/database.types.ts`
 - Ensure table schema matches type definitions
 
+### Stripe checkout fails
+
+- Verify price IDs are correct in `.env`
+- Check backend API is running and accessible
+- Review browser console for authentication errors
+- Ensure user is logged in before checkout
+
 ## Next Steps
 
-1. **Add Authentication** - Implement user signup/login
-2. **Real-time Updates** - Subscribe to database changes
+1. **Add Authentication** - Implement user signup/login with Supabase Auth
+2. **Real-time Updates** - Subscribe to database changes for live updates
 3. **File Upload** - Use Supabase Storage for profile images
-4. **Email Notifications** - Trigger emails on new emergencies
-5. **Payment Integration** - Connect Stripe for subscriptions
+4. **Email Notifications** - Trigger emails on new emergencies using Supabase Functions
+5. **Complete Stripe Setup** - Deploy backend API and configure webhooks
+6. **Payment Testing** - Test subscription flow with Stripe test cards
+7. **Go Live** - Switch to live Stripe keys and deploy to production
 
 ## Resources
 
 - [Supabase Docs](https://supabase.com/docs)
 - [TanStack Query Docs](https://tanstack.com/query/latest)
 - [React + Supabase Tutorial](https://supabase.com/docs/guides/getting-started/tutorials/with-react)
+- [Stripe Subscriptions Guide](https://stripe.com/docs/billing/subscriptions/overview)
+- [Stripe Testing](https://stripe.com/docs/testing)

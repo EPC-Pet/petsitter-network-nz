@@ -1,12 +1,4 @@
--- PetSitter Network NZ Database Schema
--- Run this in your Supabase SQL Editor to set up the database
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Create enum types
-CREATE TYPE urgency_level AS ENUM ('low', 'medium', 'high');
-CREATE TYPE alert_status AS ENUM ('active', 'fulfilled', 'cancelled');
 
 -- Members table
 CREATE TABLE IF NOT EXISTS members (

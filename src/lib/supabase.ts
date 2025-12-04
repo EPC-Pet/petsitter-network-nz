@@ -1,14 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
+/// <reference types="vite/client" />
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase credentials not found. Using mock mode.');
+interface ImportMetaEnv {
+  readonly VITE_SUPABASE_URL: string
+  readonly VITE_SUPABASE_ANON_KEY: string
 }
 
-// Create client without strict typing to avoid type conflicts with relaxed tsconfig
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
-);
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
+
+import { createClient } from '@supabase/supabase-js'
+
+// Use Vite env variables on the client. Defaults to empty string to avoid runtime errors.
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL ?? '') as string
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY ?? '') as string
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
