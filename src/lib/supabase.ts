@@ -11,7 +11,7 @@ interface ImportMeta {
 
 import { createClient } from '@supabase/supabase-js'
 
-// Use Vite env variables on the client. Defaults to empty string to avoid runtime errors.
+// Use Vite client-side env vars. Do NOT expose service_role keys in client code.
 const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL ?? '') as string
 const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY ?? '') as string
 

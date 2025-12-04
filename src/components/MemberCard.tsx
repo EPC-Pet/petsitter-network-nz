@@ -46,9 +46,9 @@ export default function MemberCard({
         <p className="text-gray-600 mb-2 flex items-center gap-2">
           {location && <span className="text-sm">{location}</span>}
           <span className="ml-auto flex flex-wrap gap-2">
-            {specialties?.map((item) => (
+            {specialties?.map((item, idx) => (
               <span 
-                key={item} 
+                key={`${item}-${idx}`} 
                 className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full"
               >
                 {item}
